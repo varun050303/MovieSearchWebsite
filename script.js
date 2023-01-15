@@ -85,6 +85,8 @@ const genres = [
     }
   ]
 
+  
+
 const main = document.getElementById('main');
 const form =  document.getElementById('form');
 const search = document.getElementById('search');
@@ -391,4 +393,81 @@ function pageCall(page){
     let url = urlSplit[0] +'?'+ b
     getMovies(url);
   }
+}
+
+let currentIndex = 0;
+let movieData = [];
+let intervalId;
+
+// Get the top 3 popular movies from TMDb API
+fetch(API_URL)
+  .then(response => response.json())
+  .then(data => {
+    movieData = data.results.slice(0, 3);
+    createCarousel();
+    startInterval();
+  });
+
+// Create the carousel by appending image elements to the DOM
+function createCarousel() {
+  const carousel = document.getElementById('carousel');
+  carousel.innerHTML = '';
+
+  movieData.forEach((movie, index) => {
+    const img = document.createElement('img');
+    img.src = IMG_URL + movie.poster_path;
+    img.alt = movie.title;
+
+    // Add active class to the first image by default
+    if (index === 0) {
+      img.classList.add('active');
+    }
+
+    carousel.append(img);
+  });
+}
+
+// Add event listeners to the next and prev buttons
+const prevBtn = document.getElementById('prev-btn');
+prevBtn.addEventListener('click', prevImage);
+const nextBtn = document.getElementById('next-btn');
+nextBtn.addEventListener('click', nextImage);
+
+// Move to the previous image
+function prevImage() {
+  clearInterval(intervalId);
+  currentIndex--;
+  if (currentIndex < 0) {
+    currentIndex = movieData.length - 1;
+  }
+  updateCarousel();
+  startInterval();
+}
+
+// Move to the next image
+function nextImage() {
+  clearInterval(intervalId);
+  currentIndex++;
+  if (currentIndex === movieData.length) {
+    currentIndex = 0;
+  }
+  updateCarousel();
+  startInterval();
+}
+
+// Update the carousel by adding/removing active class on the images
+function updateCarousel() {
+  const images = document.querySelectorAll('#carousel img');
+  images.forEach((img, index) => {
+    if (index === currentIndex) {
+      img.classList.add('active');
+    } else {
+      img.classList.remove('active');
+    }
+  });
+}
+
+// Start interval for automatic sliding
+function startInterval() {
+  intervalId = setInterval(nextImage, 3000);
 }
